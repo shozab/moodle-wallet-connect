@@ -1,7 +1,9 @@
+import { Address, BaseAddress } from '@emurgo/cardano-serialization-lib-asmjs';
 import { useCallback, useEffect, useState } from 'react';
 import './App.css';
 import { WalletInfo, WALLET_IDS } from './wallets/base';
-import { enable, getAvailableWallets, getBalance, getNetwork } from './walletsGateway';
+import { enable, getAvailableWallets, getBalance, getChangeAddress, getNetwork, getRewardAddresses, getUnusedAddresses, getUsedAddresses } from './walletsGateway';
+let Buffer = require('buffer/').Buffer
 
 function WalletCard(props: { wallet: WalletInfo, handleClick: Function }) {
   return (
@@ -25,6 +27,8 @@ function App() {
   const [enabledWallet, setEnabledWallet] = useState<WalletInfo>();
   const [balance, setBalance] = useState<string>();
   const [network, setNetwork] = useState<string>();
+  const [address, setAddress] = useState<Address>();
+  const [addresses, setAddresses] = useState([] as Address[]);
   const [error, setError] = useState();
 
   useEffect(() => {
@@ -34,6 +38,8 @@ function App() {
   const connectWallet = useCallback( async (walletId: WALLET_IDS) => {
     try {
 
+      console.log(address)
+      console.log(addresses)
       // clears the error state
       setError(undefined);
 
@@ -46,10 +52,31 @@ function App() {
       // Gets the enabled wallet network
       setNetwork(await getNetwork());
 
+      setAddresses(await getUsedAddresses());
+      setAddress(await getChangeAddress());
+
+      
+
     }catch(error: any) {
       setError(error.message || 'unknown errorr');
     }
   }, []);
+
+  const openMoodle = async function (addr:any) {
+    //console.log(BaseAddress.from_address())
+    //console.log(Address.from_bytes(Buffer.from(addr, "hex")).to_bech32())
+    // const raw = await getRewardAddresses();
+    // const rawFirst = raw[0];
+    // console.log(rawFirst)
+    // const rewardAddress = Address.from_bytes(Buffer.from(rawFirst, "hex")).to_bech32()
+    // console.log(rewardAddress)
+
+    const raw = await getChangeAddress();
+    console.log(Buffer.from(raw, "hex"))
+    const changeAddress = Address.from_bytes(Buffer.from(raw, "hex")).to_bech32()
+    console.log(changeAddress)
+
+  };
 
   return (
     <div className="w-screen h-screen bg-gray-900 overflow-auto">
@@ -81,8 +108,13 @@ function App() {
                 <h3 className="text-l text-white font-extrabold mt-4">{`Connected to ${enabledWallet.name}`}</h3>
                 <h3 className="text-sm text-gray-200 mt-4">{balance ? `Wallet Balance: ${balance}` : null}</h3>
                 <h3 className="text-sm text-gray-200 mt-2">{network ? `Connected to: ${network}` : null}</h3>
+                  
+                { address ?
+                <><h3 className="text-sm text-gray-200 mt-4" onClick={()=>{openMoodle(address)}}>{`A: ${address}`}</h3></> : <></>
+                }
               </> : 
               <><h3 className="text-l text-gray-400 font-extrabold mt-4">No wallet is enabled. Select a Wallet to enabled it</h3></>}
+
             </div>
             
             {/* Displays any error message */}
