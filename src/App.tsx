@@ -3,6 +3,8 @@ import { useCallback, useEffect, useState } from 'react';
 import './App.css';
 import { WalletInfo, WALLET_IDS } from './wallets/base';
 import { enable, getAvailableWallets, getBalance, getChangeAddress, getNetwork, getRewardAddresses, getUnusedAddresses, getUsedAddresses } from './walletsGateway';
+var md5 = require('md5');
+
 let Buffer = require('buffer/').Buffer
 
 function WalletCard(props: { wallet: WalletInfo, handleClick: Function }) {
@@ -37,9 +39,6 @@ function App() {
 
   const connectWallet = useCallback( async (walletId: WALLET_IDS) => {
     try {
-
-      console.log(address)
-      console.log(addresses)
       // clears the error state
       setError(undefined);
 
@@ -55,28 +54,20 @@ function App() {
       setAddresses(await getUsedAddresses());
       setAddress(await getChangeAddress());
 
-      
-
     }catch(error: any) {
       setError(error.message || 'unknown errorr');
     }
   }, []);
 
   const getMoodleLink = async function (addr:any) {
-    //console.log(BaseAddress.from_address())
-    //console.log(Address.from_bytes(Buffer.from(addr, "hex")).to_bech32())
-    // const raw = await getRewardAddresses();
-    // const rawFirst = raw[0];
-    // console.log(rawFirst)
-    // const rewardAddress = Address.from_bytes(Buffer.from(rawFirst, "hex")).to_bech32()
-    // console.log(rewardAddress)
 
     const raw = await getChangeAddress();
     console.log(Buffer.from(raw, "hex"))
     const changeAddress = Address.from_bytes(Buffer.from(raw, "hex")).to_bech32()
     console.log(changeAddress)
 
-    var accaddr = "0x55543D31081A94CCd9c53E055658358a7e04CF4a4444444444444444444455" // @TODO We need to determine the account address with max 64 characters.
+    var accaddr = md5(changeAddress)
+    console.log(accaddr);
 
     // var MOODLEURL = 'http://localhost/moodle-teresa/' // Set the url of Moodle
     // var MOODLEAPITOKEN = 'c7c6036ca496b737e24d964bcef82b0c' // Set the token from Moodle    
