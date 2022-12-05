@@ -76,6 +76,33 @@ function App() {
     const changeAddress = Address.from_bytes(Buffer.from(raw, "hex")).to_bech32()
     console.log(changeAddress)
 
+    var accaddr = "0x55543D31081A94CCd9c53E055658358a7e04CF4a4444444444444444444455" // @TODO We need to determine the account address with max 64 characters.
+
+    var MOODLEURL = 'http://localhost/moodle-teresa/' // Set the url of Moodle
+    var MOODLEAPITOKEN = 'c7c6036ca496b737e24d964bcef82b0c' // Set the token from Moodle    
+
+    var url = MOODLEURL + '/webservice/rest/server.php?wstoken=' + MOODLEAPITOKEN + '&wsfunction=auth_userkey_request_login_url&moodlewsrestformat=json';
+
+    const postdata = new FormData();
+    postdata.append('user[firstname]', "anonymous");
+    postdata.append('user[lastname]', accaddr.toLowerCase());
+    postdata.append('user[email]', (accaddr+"@pocre.io").toLowerCase());
+    postdata.append('user[username]', accaddr.toLowerCase());
+    postdata.append('user[idnumber]', accaddr.toLowerCase());
+
+    fetch(url, {
+      method: 'POST',
+      body: postdata
+    })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data)
+      if(data['errorcode'])
+        alert(data['message'])
+      else {
+        alert(data['loginurl'])
+      }
+    });
   };
 
   return (
@@ -110,7 +137,7 @@ function App() {
                 <h3 className="text-sm text-gray-200 mt-2">{network ? `Connected to: ${network}` : null}</h3>
                   
                 { address ?
-                <><h3 className="text-sm text-gray-200 mt-4" onClick={()=>{openMoodle(address)}}>{`A: ${address}`}</h3></> : <></>
+                <><button className="mt-8 rounded-lg border border-blue-500 bg-blue-600 bg-opacity-10 p-4 text-white mb-4" onClick={()=>{openMoodle(address)}}>Get Moodle Login</button></> : <></>
                 }
               </> : 
               <><h3 className="text-l text-gray-400 font-extrabold mt-4">No wallet is enabled. Select a Wallet to enabled it</h3></>}
